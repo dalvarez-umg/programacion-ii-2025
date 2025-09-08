@@ -20,4 +20,12 @@ public class Cita {
     public String getMotivo() { return motivo; }
     public void setEstadoCita(estadoCita estado) { this.estado = estado; }
     public estadoCita getEstadoCita() { return estado; }
+
+    public void reagendar(LocalDateTime fecha){
+        setFecha(fecha);
+    }
+
+    public void cancelar(){
+        setEstadoCita(estadoCita.CANCELADA);
+    }
 }

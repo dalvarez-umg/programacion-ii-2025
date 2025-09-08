@@ -17,7 +17,11 @@ public class Paciente {
     public int getEdadMeses(){ return edadMeses; }
     public void setEdadMeses(int edadMeses){ this.edadMeses = edadMeses; }
     public double getPesoKg(){ return pesoKg; }
-    public void setPesoKg(double pesoKg){ this.pesoKg = pesoKg; }
+    public void setPesoKg(double pesoKg){
+        if(pesoKg > 1) {
+            this.pesoKg = pesoKg;
+        }
+    }
 
     public Paciente(long id, String nombre, String especie, String raza, int edadMeses, double pesoKg) {
         this.id = id;
@@ -31,5 +35,17 @@ public class Paciente {
     public Paciente(long id, String nombre) {
         this.id = id;
         this.nombre = nombre;
+    }
+
+    public void actualizarPeso(double nuevoPeso){
+        setPesoKg(nuevoPeso);
+    }
+
+    public void cumplirMes(){
+        this.edadMeses = this.edadMeses + 1;
+    }
+
+    public boolean esCachorro(){
+        return getEdadMeses() < 12;
     }
 }
