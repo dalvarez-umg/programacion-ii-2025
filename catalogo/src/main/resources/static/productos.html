@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Catálogo – CRUD Productos (Vanilla JS)</title>
+    <title>Catálogo – CRUD Productos</title>
     <style>
         :root {
             --bg: #f8fafc;
@@ -242,16 +242,11 @@
 <body>
 <div class="container">
     <header>
-        <h1>Catálogo – CRUD Productos (Vanilla JS)</h1>
-        <p>Conectado a API Spring Boot (MariaDB). <span class="tag">Fetch API</span></p>
+        <h1>Catálogo – CRUD Productos</h1>
     </header>
 
     <section class="panel" id="config">
-        <form id="api-form" class="grid grid-cols-3" autocomplete="off">
-            <label>
-                <span>URL base de la API</span>
-                <input type="url" id="apiUrl" placeholder="http://localhost:8080/api/productos" />
-            </label>
+        <form id="api-form" class="grid grid-cols-2" autocomplete="off">
             <label>
                 <span>Filtro por nombre</span>
                 <input type="text" id="filter" placeholder="Ej. monitor" />
@@ -312,19 +307,13 @@
             </table>
         </div>
     </section>
-
-    <footer>
-        API: <code id="apiEcho">—</code>
-    </footer>
 </div>
 
 <script>
     (function () {
-        // ------- Config --------
+        const API_URL = "http://localhost:8080/api/productos";
         const $ = (sel, root = document) => root.querySelector(sel);
         const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
-        const apiUrlInput = $("#apiUrl");
-        const apiEcho = $("#apiEcho");
         const filterInput = $("#filter");
         const okBox = $("#okBox");
         const errBox = $("#errBox");
@@ -336,20 +325,10 @@
         const countEl = $("#count");
         const tbody = $("#tbody");
 
-        // Persist API URL in localStorage for convenience
-        const DEFAULT_API = "http://localhost:8080/api/productos";
-        apiUrlInput.value = localStorage.getItem("API_URL") || DEFAULT_API;
-        apiEcho.textContent = apiUrlInput.value;
-
-        apiUrlInput.addEventListener("change", () => {
-            localStorage.setItem("API_URL", apiUrlInput.value);
-            apiEcho.textContent = apiUrlInput.value;
-            load();
-        });
-
         $("#reload").addEventListener("click", () => load());
         $("#clearFilter").addEventListener("click", () => { filterInput.value = ""; renderRows(window.__items || []); });
         $("#newBtn").addEventListener("click", () => resetForm());
+        $("#cancelBtn").addEventListener("click", () => resetForm());
 
         filterInput.addEventListener("input", () => {
             const items = window.__items || [];
@@ -378,7 +357,7 @@
 
         async function load() {
             try {
-                const res = await fetch(apiUrlInput.value, {
+                const res = await fetch(API_URL, {
                     headers: { "Accept": "application/json" }
                 });
                 if (!res.ok) throw new Error(`Error al cargar (${res.status})`);
@@ -418,7 +397,6 @@
     `;
             }).join('');
 
-            // Bind action buttons
             $$('button[data-edit]').forEach(btn =>
                 btn.addEventListener('click', () => startEdit(btn.getAttribute('data-edit')))
             );
@@ -437,7 +415,7 @@
 
         async function startEdit(id) {
             try {
-                const res = await fetch(apiUrlInput.value + "/" + id);
+                const res = await fetch(API_URL + "/" + id);
 
                 if (res.status === 404) {
                     showErr("Producto no encontrado");
@@ -472,7 +450,7 @@
 
             const isEdit = !!idInput.value;
             const method = isEdit ? "PUT" : "POST";
-            const url = isEdit ? apiUrlInput.value + "/" + idInput.value : apiUrlInput.value;
+            const url = isEdit ? API_URL + "/" + idInput.value : API_URL;
 
             try {
                 const res = await fetch(url, {
@@ -517,7 +495,7 @@
             if (!confirm("¿Eliminar este producto?")) return;
 
             try {
-                const res = await fetch(apiUrlInput.value + "/" + id, { method: "DELETE" });
+                const res = await fetch(API_URL + "/" + id, { method: "DELETE" });
 
                 if (!(res.ok || res.status === 204)) {
                     throw new Error(`No se pudo eliminar (${res.status})`);
