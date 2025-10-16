@@ -1,5 +1,6 @@
 package umg.edu.catalogo.controller;
 
+import org.springframework.http.HttpStatus;
 import umg.edu.catalogo.model.Producto;
 import umg.edu.catalogo.service.ProductoService;
 import jakarta.validation.Valid;
@@ -10,6 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/productos")
+@CrossOrigin(origins = "*")
 public class ProductoController {
     private final ProductoService service;
 
@@ -28,7 +30,8 @@ public class ProductoController {
 
     @PostMapping
     public ResponseEntity<Producto> crear(@Valid @RequestBody Producto p) {
-        return ResponseEntity.ok(service.crear(p));
+        Producto guardado = service.crear(p);
+        return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
     }
 
     @PutMapping("/{id}")

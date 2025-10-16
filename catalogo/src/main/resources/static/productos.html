@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Catálogo – CRUD Productos (Vanilla JS)</title>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            /* slate-50 */
+            --panel: #ffffff;
+            /* white */
+            --text: #0f172a;
+            /* slate-900 */
+            --muted: #64748b;
+            /* slate-500 */
+            --primary: #4f46e5;
+            /* indigo-600 */
+            --primary-2: #6366f1;
+            /* indigo-500 */
+            --danger: #e11d48;
+            /* rose-600 */
+            --border: #e5e7eb;
+            /* gray-200 */
+            --ring: #c7d2fe;
+            /* indigo-200 */
+            --success: #16a34a;
+            /* green-600 */
+            --warning: #c2410c;
+            /* orange-700 */
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+
+        body {
+            margin: 0;
+            background: linear-gradient(180deg, var(--bg), #fff);
+            color: var(--text);
+            font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 1080px;
+            margin: 0 auto;
+        }
+
+        header h1 {
+            margin: .2rem 0 .25rem;
+            font-size: clamp(1.25rem, 2.5vw, 1.75rem)
+        }
+
+        header p {
+            margin: 0;
+            color: var(--muted)
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, .06);
+            padding: 1rem;
+        }
+
+        .grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        @media (min-width: 860px) {
+            .grid-cols-3 {
+                grid-template-columns: 1.3fr 1fr auto
+            }
+        }
+
+        label {
+            display: block;
+            font-size: .9rem;
+            margin: .25rem 0
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="url"] {
+            width: 100%;
+            padding: .6rem .75rem;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            outline: none;
+        }
+
+        input:focus {
+            box-shadow: 0 0 0 3px var(--ring);
+            border-color: var(--primary)
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .4rem;
+            border: 0;
+            cursor: pointer;
+            padding: .6rem .9rem;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: .15s transform, .2s background;
+        }
+
+        .btn:active {
+            transform: scale(.98)
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-2)
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #111827;
+            border: 1px solid var(--border)
+        }
+
+        .btn-secondary:hover {
+            background: #eef2ff
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: #fff
+        }
+
+        .btn-danger:hover {
+            filter: brightness(1.05)
+        }
+
+        .toolbar {
+            display: flex;
+            gap: .6rem;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            margin: .75rem 0
+        }
+
+        .toolbar .left {
+            display: flex;
+            gap: .5rem;
+            align-items: center;
+            flex-wrap: wrap
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: .8rem;
+            padding: .2rem .5rem;
+            border-radius: 999px;
+            background: #eef2ff;
+            color: #3730a3
+        }
+
+        .error,
+        .success {
+            border-radius: 12px;
+            padding: .6rem .75rem;
+            margin-bottom: .75rem;
+            border: 1px solid;
+        }
+
+        .error {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #991b1b
+        }
+
+        .success {
+            background: #ecfdf5;
+            border-color: #bbf7d0;
+            color: #065f46
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        thead th {
+            text-align: left;
+            font-size: .85rem;
+            color: var(--muted);
+            padding: .75rem
+        }
+
+        tbody td {
+            padding: .75rem;
+            border-top: 1px solid var(--border)
+        }
+
+        tbody tr:hover {
+            background: #f9fafb
+        }
+
+        .right {
+            text-align: right
+        }
+
+        footer {
+            text-align: center;
+            color: var(--muted);
+            font-size: .8rem;
+            margin-top: 1.5rem
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            border: 0;
+            clip: rect(0, 0, 0, 0);
+            overflow: hidden
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <header>
+        <h1>Catálogo – CRUD Productos (Vanilla JS)</h1>
+        <p>Conectado a API Spring Boot (MariaDB). <span class="tag">Fetch API</span></p>
+    </header>
+
+    <section class="panel" id="config">
+        <form id="api-form" class="grid grid-cols-3" autocomplete="off">
+            <label>
+                <span>URL base de la API</span>
+                <input type="url" id="apiUrl" placeholder="http://localhost:8080/api/productos" />
+            </label>
+            <label>
+                <span>Filtro por nombre</span>
+                <input type="text" id="filter" placeholder="Ej. monitor" />
+            </label>
+            <div style="display:flex; gap:.5rem; align-items:end">
+                <button class="btn btn-secondary" type="button" id="reload">Recargar</button>
+                <button class="btn btn-secondary" type="button" id="clearFilter">Limpiar filtro</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel" id="form-panel" style="margin-top:1rem">
+        <div class="success sr-only" id="okBox"></div>
+        <div class="error sr-only" id="errBox"></div>
+
+        <h2 style="margin:.25rem 0 .75rem">Producto <span id="modeTag" class="tag">nuevo</span></h2>
+        <form id="product-form" class="grid grid-cols-3" autocomplete="off">
+            <input type="hidden" id="id" />
+            <label>
+                <span>Nombre</span>
+                <input type="text" id="nombre" required placeholder="Ej. Monitor 27&quot; 4K" />
+            </label>
+            <label>
+                <span>Precio</span>
+                <input type="number" id="precio" step="0.01" min="0" required placeholder="Ej. 1999.99" />
+            </label>
+            <div style="display:flex; gap:.5rem; align-items:end">
+                <button class="btn btn-primary" type="submit" id="saveBtn">Guardar</button>
+                <button class="btn btn-secondary" type="button" id="cancelBtn">Cancelar</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel" id="table-panel" style="margin-top:1rem">
+        <div class="toolbar">
+            <div class="left">
+                <strong id="count">0</strong> producto(s)
+            </div>
+            <div class="right">
+                <button class="btn btn-secondary" type="button" id="newBtn">Nuevo</button>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Precio</th>
+                    <th class="right">Acciones</th>
+                </tr>
+                </thead>
+                <tbody id="tbody">
+                <tr>
+                    <td colspan="4">Sin datos</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <footer>
+        API: <code id="apiEcho">—</code>
+    </footer>
+</div>
+
+<script>
+    (function () {
+        // ------- Config --------
+        const $ = (sel, root = document) => root.querySelector(sel);
+        const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+        const apiUrlInput = $("#apiUrl");
+        const apiEcho = $("#apiEcho");
+        const filterInput = $("#filter");
+        const okBox = $("#okBox");
+        const errBox = $("#errBox");
+        const modeTag = $("#modeTag");
+        const form = $("#product-form");
+        const idInput = $("#id");
+        const nombreInput = $("#nombre");
+        const precioInput = $("#precio");
+        const countEl = $("#count");
+        const tbody = $("#tbody");
+
+        // Persist API URL in localStorage for convenience
+        const DEFAULT_API = "http://localhost:8080/api/productos";
+        apiUrlInput.value = localStorage.getItem("API_URL") || DEFAULT_API;
+        apiEcho.textContent = apiUrlInput.value;
+
+        apiUrlInput.addEventListener("change", () => {
+            localStorage.setItem("API_URL", apiUrlInput.value);
+            apiEcho.textContent = apiUrlInput.value;
+            load();
+        });
+
+        $("#reload").addEventListener("click", () => load());
+        $("#clearFilter").addEventListener("click", () => { filterInput.value = ""; renderRows(window.__items || []); });
+        $("#newBtn").addEventListener("click", () => resetForm());
+
+        filterInput.addEventListener("input", () => {
+            const items = window.__items || [];
+            const q = filterInput.value.trim().toLowerCase();
+            const filtered = q ? items.filter(x => String(x.nombre || "\"").toLowerCase().includes(q)) : items;
+            renderRows(filtered);
+        });
+
+        function showOk(msg) {
+            okBox.textContent = msg;
+            okBox.classList.remove("sr-only");
+            setTimeout(() => okBox.classList.add("sr-only"), 2500);
+        }
+
+        function showErr(msg) {
+            errBox.textContent = msg;
+            errBox.classList.remove("sr-only");
+            setTimeout(() => errBox.classList.add("sr-only"), 4500);
+        }
+
+        function formatMoney(n) {
+            const num = Number(n);
+            if (Number.isNaN(num)) return "-\"";
+            return num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        async function load() {
+            try {
+                const res = await fetch(apiUrlInput.value, {
+                    headers: { "Accept": "application/json" }
+                });
+                if (!res.ok) throw new Error(`Error al cargar (${res.status})`);
+                const data = await res.json();
+                window.__items = Array.isArray(data) ? data : [];
+                renderRows(window.__items);
+            } catch (e) {
+                window.__items = [];
+                renderRows([]);
+                showErr(e.message || "No se pudo cargar");
+            }
+        }
+
+        function renderRows(items) {
+            countEl.textContent = items.length;
+
+            if (!items || items.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4">Sin datos</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = items.map(it => {
+                const id = it.id ?? '';
+                const nombre = escapeHtml(it.nombre ?? '');
+                const precio = formatMoney(it.precio);
+
+                return `
+      <tr>
+        <td>${id}</td>
+        <td>${nombre}</td>
+        <td>${precio}</td>
+        <td class="right">
+          <button class="btn btn-secondary" data-edit="${id}">Editar</button>
+          <button class="btn btn-danger" data-del="${id}">Eliminar</button>
+        </td>
+      </tr>
+    `;
+            }).join('');
+
+            // Bind action buttons
+            $$('button[data-edit]').forEach(btn =>
+                btn.addEventListener('click', () => startEdit(btn.getAttribute('data-edit')))
+            );
+            $$('button[data-del]').forEach(btn =>
+                btn.addEventListener('click', () => removeItem(btn.getAttribute('data-del')))
+            );
+        }
+
+        function resetForm() {
+            idInput.value = "";
+            nombreInput.value = "";
+            precioInput.value = "";
+            modeTag.textContent = "nuevo";
+            nombreInput.focus();
+        }
+
+        async function startEdit(id) {
+            try {
+                const res = await fetch(apiUrlInput.value + "/" + id);
+
+                if (res.status === 404) {
+                    showErr("Producto no encontrado");
+                    return;
+                }
+                if (!res.ok) throw new Error(`Error al obtener (${res.status})`);
+
+                const it = await res.json();
+                idInput.value = it.id ?? "";
+                nombreInput.value = it.nombre ?? "";
+                precioInput.value = it.precio ?? "";
+                modeTag.textContent = "edición";
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                nombreInput.focus();
+            } catch (e) {
+                showErr(e.message || "No se pudo obtener el producto");
+            }
+        }
+
+        form.addEventListener("submit", async (ev) => {
+            ev.preventDefault();
+
+            const nombre = (nombreInput.value || "").trim();
+            const precio = Number(precioInput.value);
+
+            if (!nombre || Number.isNaN(precio)) {
+                showErr("Nombre y precio son obligatorios");
+                return;
+            }
+
+            const body = JSON.stringify({ nombre, precio });
+
+            const isEdit = !!idInput.value;
+            const method = isEdit ? "PUT" : "POST";
+            const url = isEdit ? apiUrlInput.value + "/" + idInput.value : apiUrlInput.value;
+
+            try {
+                const res = await fetch(url, {
+                    method,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                    },
+                    body,
+                });
+
+                if (res.status === 400) {
+                    const data = await res.json().catch(() => ({}));
+                    const msg =
+                        (data.errors || [])
+                            .map((e) => `${e.field}: ${e.message}`)
+                            .join(" | ") ||
+                        data.error ||
+                        "Solicitud inválida";
+                    throw new Error(msg);
+                }
+
+                if (res.status === 409) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(data.error || "Conflicto de datos");
+                }
+
+                if (!(res.ok || res.status === 201)) {
+                    throw new Error(`Error al guardar (${res.status})`);
+                }
+
+                await load();
+                resetForm();
+                showOk(isEdit ? "Producto actualizado" : "Producto creado");
+            } catch (e) {
+                showErr(e.message || "No se pudo guardar");
+            }
+        });
+
+
+        async function removeItem(id) {
+            if (!confirm("¿Eliminar este producto?")) return;
+
+            try {
+                const res = await fetch(apiUrlInput.value + "/" + id, { method: "DELETE" });
+
+                if (!(res.ok || res.status === 204)) {
+                    throw new Error(`No se pudo eliminar (${res.status})`);
+                }
+
+                await load();
+
+                if (idInput.value === String(id)) resetForm();
+                showOk("Producto eliminado");
+            } catch (e) {
+                showErr(e.message || "No se pudo eliminar");
+            }
+        }
+
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>'"]/g, (c) => {
+                const map = {
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    "'": "&#39;",
+                    '"': "&quot;"
+                };
+                return map[c];
+            });
+        }
+
+
+        // init
+        load();
+    })();
+</script>
+</body>
+
+</html>
